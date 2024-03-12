@@ -24,6 +24,12 @@ impl<T> super::LinkedList<T> for List<T> {
             }
         }
     }
+    fn peek(&self) -> Option<&T> {
+        self.head.as_ref().map(|ret| &ret.elem)
+    }
+    fn peek_mut(&mut self) -> Option<&mut T> {
+        self.head.as_mut().map(|ret| &mut ret.elem)
+    }
 }
 impl<T> Drop for List<T> {
     fn drop(&mut self) {

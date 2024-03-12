@@ -48,3 +48,40 @@ MPSC queue
 > automatic handling (`list -> A -> B -> C`)... might be thinking "this is clearly tail recursive..."... is in fact, incorrect!
 
 > We can't drop the contents of the Box after deallocating, so there's no way to drop in a tail-recursive manner!
+
+## second-peek.html
+
+Actually it's fine using the match syntax, with the help of the magical keyword `ref` in pattern branch, which affects _how_ it binds but _if_ it binds. It's kinda an old feature, so try not to use it, but in fact it's exactly how `Option::as_ref()` is implemented as of Rust 1.76.0 (07dca489a 2024-02-04).
+
+``` rust
+fn peep(&self) -> Option<&T> {
+    match self.head {
+        None => None,
+        Some(ref n) => Some(&n.elem),
+    }
+}
+```
+
+``` rust
+// Notice `ref mut` != `mut ref`
+// the former produces `&mut`
+// the latter produces `mut &`, a borrow that could rebind.
+fn peek_mut(&mut self) -> Option<&mut T> {
+    match self.head {
+        Arrow::Empty => None,
+        Arrow::More(ref mut ret) => Some(&mut ret.elem),
+    }
+}
+```
+
+``` rust
+// [Rust src](https://doc.rust-lang.org/src/core/option.rs.html#680)
+pub const fn as_ref(&self) -> Option<&T> {
+    match *self {
+        Some(ref x) => Some(x),
+        None => None,
+    }
+}
+```
+
+About the borrow checker, currently if all branches are with `ref` keyword when pattern matching, then it's considered a borrow, and subsequent uses are fine. Else, if one of the branches is pattern matching, than the usual move semantics applies, and subsequent uses are invalid.

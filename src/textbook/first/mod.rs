@@ -38,6 +38,34 @@ impl<T> super::super::LinkedList<T> for List<T> {
             next: mem::replace(&mut self.head, Arrow::Empty),
         }));
     }
+    fn peek(&self) -> Option<&T> {
+        // Legacy code, the `ref` keyword
+        // Try not to use it
+        /*
+        match self.head {
+            Arrow::Empty => None,
+            Arrow::More(ref ret) => Some(&ret.elem),
+        }
+        */
+        match &self.head {
+            Arrow::Empty => None,
+            Arrow::More(ret) => Some(&ret.elem),
+        }
+    }
+    fn peek_mut(&mut self) -> Option<&mut T> {
+        // Legacy code, the `ref` keyword
+        // Try not to use it
+        /*
+        match self.head {
+            Arrow::Empty => None,
+            Arrow::More(ref mut ret) => Some(&mut ret.elem),
+        }
+        */
+        match &mut self.head {
+            Arrow::Empty => None,
+            Arrow::More(ret) => Some(&mut ret.elem),
+        }
+    }
     fn pop(&mut self) -> Option<T> {
         match self.pop_worker() {
             Arrow::Empty => None,

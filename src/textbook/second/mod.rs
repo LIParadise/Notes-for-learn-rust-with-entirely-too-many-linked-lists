@@ -1,10 +1,12 @@
+type Link<T> = Option<Box<Node<T>>>;
+
 pub struct List<T> {
-    head: Option<Box<Node<T>>>,
+    head: Link<T>,
 }
 
 struct Node<T> {
     elem: T,
-    next: Option<Box<Node<T>>>,
+    next: Link<T>,
 }
 
 impl<T> super::super::LinkedList<T> for List<T> {
@@ -16,6 +18,12 @@ impl<T> super::super::LinkedList<T> for List<T> {
             elem,
             next: self.head.take(),
         }));
+    }
+    fn peek(&self) -> Option<&T> {
+        self.head.as_ref().map(|ret| &ret.elem)
+    }
+    fn peek_mut(&mut self) -> Option<&mut T> {
+        self.head.as_mut().map(|ret| &mut ret.elem)
     }
     fn pop(&mut self) -> Option<T> {
         self.head.take().map(|boxed_node| {

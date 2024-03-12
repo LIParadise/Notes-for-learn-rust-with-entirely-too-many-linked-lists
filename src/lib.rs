@@ -5,6 +5,8 @@ pub trait LinkedList<T> {
     fn new() -> Self;
     fn push(&mut self, elem: T);
     fn pop(&mut self) -> Option<T>;
+    fn peek(&self) -> Option<&T>;
+    fn peek_mut(&mut self) -> Option<&mut T>;
 }
 
 #[cfg(test)]
@@ -14,7 +16,7 @@ mod tests {
     mod foo {
         #[derive(Debug, PartialEq, Eq, Default)]
         pub struct Foo {
-            u: usize,
+            pub u: usize,
         }
         impl Foo {
             pub fn new(u: usize) -> Self {
@@ -64,9 +66,18 @@ mod tests {
         assert_eq!(list.pop(), Some(Foo::new(1)));
         assert_eq!(list.pop(), None);
 
-        // Populate list so non-empty `Drop`
+        // Populate list so non-empty `Drop` and peep
         list.push(Foo::new(1));
         list.push(Foo::new(2));
         list.push(Foo::new(3));
+        assert_eq!(list.peek(), Some(&Foo::new(3)));
+        assert_eq!(list.peek_mut(), Some(&mut Foo::new(3)));
+        list.push(Foo::new(6));
+        list.push(Foo::new(8));
+        assert_eq!(list.peek(), Some(&Foo::new(8)));
+        assert_eq!(list.peek_mut(), Some(&mut Foo::new(8)));
+        list.peek_mut().map(|x| *x = Foo::new(69));
+        assert_eq!(list.peek(), Some(&Foo::new(69)));
+        assert_eq!(list.peek_mut(), Some(&mut Foo::new(69)));
     }
 }
