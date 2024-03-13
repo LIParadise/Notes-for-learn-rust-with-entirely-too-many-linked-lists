@@ -29,17 +29,42 @@ mod tests {
     fn first() {
         let mut mine = mine::List::new();
         let mut textbook = textbook::first::List::new();
-        worker(&mut mine);
-        worker(&mut textbook);
+        basic_test_worker(&mut mine);
+        basic_test_worker(&mut textbook);
     }
 
     #[test]
     fn second() {
         let mut textbook = textbook::second::List::new();
-        worker(&mut textbook);
+        basic_test_worker(&mut textbook);
+        let mut textbook: textbook::second::List<i32> = textbook::second::List::new();
+        iter_worker(&mut textbook);
     }
 
-    fn worker<L: LinkedList<Foo> + ?Sized>(list: &mut L) {
+    fn iter_worker<T: From<i32>, L: LinkedList<T> + IntoIterator + Iterator>(list: &mut L)
+    where
+        <L as IntoIterator>::Item: std::fmt::Debug,
+        <L as Iterator>::Item: std::fmt::Debug,
+    {
+        list.push(1.into());
+        list.push(1.into());
+        list.push(4.into());
+        list.push(5.into());
+        list.push(1.into());
+        list.push(4.into());
+        vec![1.into(), 1.into(), 4.into(), 5.into(), 1.into(), 4.into()]
+            .into_iter()
+            .rev()
+            .zip(list.into_iter())
+            .for_each(|(a, b)| assert_eq!(a, b));
+        vec![1.into(), 1.into(), 4.into(), 5.into(), 1.into(), 4.into()]
+            .iter()
+            .rev()
+            .zip(list.iter())
+            .for_each(|(a, b)| assert_eq!(a, b));
+    }
+
+    fn basic_test_worker<L: LinkedList<Foo> + ?Sized>(list: &mut L) {
         while let Some(_) = list.pop() {}
 
         // Check empty list behaves right

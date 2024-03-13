@@ -85,3 +85,9 @@ pub const fn as_ref(&self) -> Option<&T> {
 ```
 
 About the borrow checker, currently if all branches are with `ref` keyword when pattern matching, then it's considered a borrow, and subsequent uses are fine. Else, if one of the branches is pattern matching, than the usual move semantics applies, and subsequent uses are invalid.
+
+## second-into-iter.html
+
+> ...Sadly, Rust has nothing like a `yield` statement (yet)
+
+what is a `yield` again?
