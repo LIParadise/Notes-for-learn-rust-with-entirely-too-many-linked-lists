@@ -9,11 +9,27 @@ struct Node<T> {
 }
 type Link<T> = Option<Box<Node<T>>>;
 
+impl<T> List<T> {
+    fn pop_by_box(&mut self) -> Link<T> {
+        self.head.take().map(|mut boxed_node| {
+            self.head = boxed_node.next.take();
+            boxed_node
+        })
+    }
+}
+
 pub struct MyIntoIter<T>(List<T>);
 impl<T> std::iter::Iterator for MyIntoIter<T> {
     type Item = T;
     fn next(&mut self) -> Option<Self::Item> {
         self.0.pop()
+    }
+}
+impl<T> std::iter::IntoIterator for List<T> {
+    type IntoIter = MyIntoIter<T>;
+    type Item = T;
+    fn into_iter(self) -> Self::IntoIter {
+        MyIntoIter(self)
     }
 }
 
@@ -27,15 +43,6 @@ impl<'a, T> std::iter::Iterator for MyIter<'a, T> {
         })
     }
 }
-
-impl<T> std::iter::IntoIterator for List<T> {
-    type IntoIter = MyIntoIter<T>;
-    type Item = T;
-    fn into_iter(self) -> Self::IntoIter {
-        MyIntoIter(self)
-    }
-}
-
 pub trait HaveIter {
     type Iter<'a, U: 'a>: Iterator<Item = &'a Self::GroundType>
     where
@@ -57,15 +64,6 @@ pub trait Clear {
 impl<T> Clear for List<T> {
     fn clear(&mut self) {
         while let Some(_) = self.pop_by_box() {}
-    }
-}
-
-impl<T> List<T> {
-    fn pop_by_box(&mut self) -> Link<T> {
-        self.head.take().map(|mut boxed_node| {
-            self.head = boxed_node.next.take();
-            boxed_node
-        })
     }
 }
 
