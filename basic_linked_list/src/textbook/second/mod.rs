@@ -3,12 +3,10 @@ use crate::LinkedList;
 pub struct List<T> {
     head: Link<T>,
 }
-
 struct Node<T> {
     elem: T,
     next: Link<T>,
 }
-
 type Link<T> = Option<Box<Node<T>>>;
 
 pub struct MyIntoIter<T>(List<T>);
@@ -38,24 +36,27 @@ impl<T> std::iter::IntoIterator for List<T> {
     }
 }
 
-pub trait IHaveIterSuperTrait {
-    type Iter<'a, U: 'a>: Iterator<Item = &'a U>;
+pub trait HaveIter {
+    type Iter<'a, U: 'a>: Iterator<Item = &'a Self::GroundType>
+    where
+        Self: 'a;
+    type GroundType;
+    fn iter<'a>(&'a self) -> Self::Iter<'a, Self::GroundType>;
 }
-pub trait IHaveIter: IHaveIterSuperTrait {
-    fn iter<'a, T>(&'a self) -> Self::Iter<'a, T>;
-}
-impl<T> IHaveIterSuperTrait for List<T> {
-    type Iter<'a, U: 'a> = MyIter<'a, U>;
-}
-impl<T> IHaveIter for List<T> {
-    fn iter<'a, U>(&'a self) -> MyIter<'a, U> {
+impl<T> HaveIter for List<T> {
+    type GroundType = T;
+    type Iter<'a, U: 'a> = MyIter<'a, T> where T: 'a;
+    fn iter<'a>(&'a self) -> MyIter<'a, T> {
         MyIter(&self.head)
     }
 }
 
-impl<'a, T> List<T> {
-    pub fn iter(&'a self) -> MyIter<'a, T> {
-        MyIter(&self.head)
+pub trait Clear {
+    fn clear(&mut self);
+}
+impl<T> Clear for List<T> {
+    fn clear(&mut self) {
+        while let Some(_) = self.pop_by_box() {}
     }
 }
 
@@ -92,6 +93,6 @@ impl<T> super::super::LinkedList<T> for List<T> {
 impl<T> Drop for List<T> {
     // Iterative approach s.t. no stack overflow
     fn drop(&mut self) {
-        while let Some(_) = self.pop_by_box() {}
+        self.clear()
     }
 }

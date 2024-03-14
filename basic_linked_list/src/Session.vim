@@ -13,12 +13,12 @@ if &shortmess =~ 'A'
 else
   set shortmess=aoO
 endif
-badd +3 lib.rs
+badd +86 lib.rs
 badd +17 textbook/first//mod.rs
-badd +17 textbook//second//mod.rs
+badd +37 textbook//second//mod.rs
 badd +2 textbook//mod.rs
 badd +2 main.rs
-badd +1 ../remarks.md
+badd +2 ../remarks.md
 argglobal
 %argdel
 $argadd lib.rs
@@ -41,12 +41,12 @@ setlocal fdn=20
 setlocal fen
 silent! normal! zE
 let &fdl = &fdl
-let s:l = 18 - ((17 * winheight(0) + 10) / 21)
+let s:l = 82 - ((1 * winheight(0) + 10) / 21)
 if s:l < 1 | let s:l = 1 | endif
 keepjumps exe s:l
 normal! zt
-keepjumps 18
-normal! 011|
+keepjumps 82
+normal! 021|
 tabnext
 edit textbook/first//mod.rs
 argglobal
@@ -66,7 +66,7 @@ if s:l < 1 | let s:l = 1 | endif
 keepjumps exe s:l
 normal! zt
 keepjumps 39
-normal! 012|
+normal! 09|
 tabnext
 edit textbook//second//mod.rs
 argglobal
@@ -81,12 +81,12 @@ setlocal fdn=20
 setlocal fen
 silent! normal! zE
 let &fdl = &fdl
-let s:l = 17 - ((13 * winheight(0) + 10) / 21)
+let s:l = 94 - ((16 * winheight(0) + 10) / 21)
 if s:l < 1 | let s:l = 1 | endif
 keepjumps exe s:l
 normal! zt
-keepjumps 17
-normal! 015|
+keepjumps 94
+normal! 09|
 tabnext
 edit textbook//mod.rs
 argglobal
@@ -141,13 +141,13 @@ setlocal fdn=20
 setlocal fen
 silent! normal! zE
 let &fdl = &fdl
-let s:l = 1 - ((0 * winheight(0) + 10) / 21)
+let s:l = 5 - ((4 * winheight(0) + 10) / 21)
 if s:l < 1 | let s:l = 1 | endif
 keepjumps exe s:l
 normal! zt
-keepjumps 1
+keepjumps 5
 normal! 0
-tabnext 6
+tabnext 3
 set stal=1
 if exists('s:wipebuf') && len(win_findbuf(s:wipebuf)) == 0 && getbufvar(s:wipebuf, '&buftype') isnot# 'terminal'
   silent exe 'bwipe ' . s:wipebuf

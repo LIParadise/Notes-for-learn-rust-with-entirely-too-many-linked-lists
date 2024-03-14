@@ -23,6 +23,11 @@ mod tests {
                 Self { u }
             }
         }
+        impl From<i32> for Foo {
+            fn from(value: i32) -> Self {
+                Self::new(value as usize)
+            }
+        }
     }
 
     #[test]
@@ -37,31 +42,57 @@ mod tests {
     fn second() {
         let mut textbook = textbook::second::List::new();
         basic_test_worker(&mut textbook);
-        let mut textbook: textbook::second::List<i32> = textbook::second::List::new();
-        iter_worker(&mut textbook);
+        let textbook: textbook::second::List<Foo> = textbook::second::List::new();
+        iter_worker(textbook);
     }
 
-    fn iter_worker<T: From<i32>, L: LinkedList<T> + IntoIterator + Iterator>(list: &mut L)
-    where
-        <L as IntoIterator>::Item: std::fmt::Debug,
-        <L as Iterator>::Item: std::fmt::Debug,
+    fn iter_worker<
+        T: From<i32> + std::fmt::Debug + Eq,
+        L: LinkedList<T> + IntoIterator + textbook::second::HaveIter + textbook::second::Clear,
+    >(
+        mut list: L,
+    ) where
+        <L as IntoIterator>::Item: std::fmt::Debug + Into<T>,
+        <L as textbook::second::HaveIter>::GroundType: std::fmt::Debug + Into<T> + PartialEq<T>,
     {
-        list.push(1.into());
+        list.clear();
+        vec![
+            T::from(1i32),
+            1.into(),
+            4.into(),
+            5.into(),
+            1.into(),
+            4.into(),
+        ]
+        .iter()
+        .rev()
+        .zip(list.iter())
+        .for_each(|(a, b)| assert_eq!(b, a));
+
+        list.push(T::from(1i32));
         list.push(1.into());
         list.push(4.into());
         list.push(5.into());
         list.push(1.into());
         list.push(4.into());
-        vec![1.into(), 1.into(), 4.into(), 5.into(), 1.into(), 4.into()]
-            .into_iter()
-            .rev()
-            .zip(list.into_iter())
-            .for_each(|(a, b)| assert_eq!(a, b));
-        vec![1.into(), 1.into(), 4.into(), 5.into(), 1.into(), 4.into()]
-            .iter()
-            .rev()
-            .zip(list.iter())
-            .for_each(|(a, b)| assert_eq!(a, b));
+        vec![
+            T::from(1i32),
+            1.into(),
+            4.into(),
+            5.into(),
+            1.into(),
+            4.into(),
+            1.into(),
+            1.into(),
+            4.into(),
+            5.into(),
+            1.into(),
+            4.into(),
+        ]
+        .into_iter()
+        .rev()
+        .zip(list.into_iter())
+        .for_each(|(a, b)| assert_eq!(a, b.into()));
     }
 
     fn basic_test_worker<L: LinkedList<Foo> + ?Sized>(list: &mut L) {
