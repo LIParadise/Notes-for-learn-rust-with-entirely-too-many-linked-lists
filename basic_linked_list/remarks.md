@@ -91,3 +91,9 @@ About the borrow checker, currently if all branches are with `ref` keyword when 
 > ...Sadly, Rust has nothing like a `yield` statement (yet)
 
 what is a `yield` again?
+
+## second-iter.html
+
+> Quite simply, a lifetime is the name of a region (~block/scope) of code somewhere in a program. That's it. When a reference is tagged with a lifetime, we're saying that it has to be valid for that entire region.
+
+> The entire lifetime system is in turn just a constraint-solving system that tries to minimize the region of every reference.
