@@ -8,10 +8,21 @@ pub trait LinkedList<T> {
     fn peek(&self) -> Option<&T>;
     fn peek_mut(&mut self) -> Option<&mut T>;
 }
+pub trait HaveIter {
+    type Iter<'a, U: 'a>: Iterator<Item = &'a Self::GroundType>
+    where
+        Self: 'a;
+    type GroundType;
+    fn iter<'a>(&'a self) -> Self::Iter<'a, Self::GroundType>;
+}
+pub trait Clear {
+    fn clear(&mut self);
+}
 
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::HaveIter;
     use foo::*;
     mod foo {
         #[derive(Debug, PartialEq, Eq, Default)]
@@ -32,7 +43,7 @@ mod tests {
 
     #[test]
     fn first() {
-        let mut mine = mine::List::new();
+        let mut mine = mine::first::List::new();
         let mut textbook = textbook::first::List::new();
         basic_test_worker(&mut mine);
         basic_test_worker(&mut textbook);
@@ -41,19 +52,23 @@ mod tests {
     #[test]
     fn second() {
         let mut textbook = textbook::second::List::new();
+        let mut mine = mine::first::List::new();
         basic_test_worker(&mut textbook);
+        basic_test_worker(&mut mine);
         let textbook: textbook::second::List<Foo> = textbook::second::List::new();
+        let mine: mine::second::List<Foo> = mine::second::List::new();
         iter_worker(textbook);
+        iter_worker(mine);
     }
 
     fn iter_worker<
         T: From<i32> + std::fmt::Debug + Eq,
-        L: LinkedList<T> + IntoIterator + textbook::second::HaveIter + textbook::second::Clear,
+        L: LinkedList<T> + IntoIterator + HaveIter + Clear,
     >(
         mut list: L,
     ) where
         <L as IntoIterator>::Item: std::fmt::Debug + Into<T>,
-        <L as textbook::second::HaveIter>::GroundType: std::fmt::Debug + Into<T> + PartialEq<T>,
+        <L as HaveIter>::GroundType: std::fmt::Debug + Into<T> + PartialEq<T>,
     {
         list.clear();
         vec![
