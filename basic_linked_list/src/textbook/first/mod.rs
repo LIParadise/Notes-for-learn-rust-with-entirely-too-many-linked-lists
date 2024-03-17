@@ -1,4 +1,4 @@
-use std::{io::Empty, mem};
+use std::mem;
 
 use crate::LinkedList;
 
@@ -28,7 +28,7 @@ impl<T> List<T> {
     }
 }
 
-impl<T> super::super::LinkedList<T> for List<T> {
+impl<T> LinkedList<T> for List<T> {
     fn new() -> Self {
         Self { head: Arrow::Empty }
     }

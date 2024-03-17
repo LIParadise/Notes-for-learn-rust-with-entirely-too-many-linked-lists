@@ -1,4 +1,4 @@
-use crate::LinkedList;
+use crate::{Clear, HaveIter, LinkedList};
 
 pub struct List<T> {
     head: Link<T>,
@@ -33,38 +33,31 @@ impl<T> std::iter::IntoIterator for List<T> {
     }
 }
 
-pub struct MyIter<'a, T>(Option<&'a Node<T>>);
+pub struct MyIter<'a, T>(&'a Link<T>);
 impl<'a, T> std::iter::Iterator for MyIter<'a, T> {
     type Item = &'a T;
     fn next(&mut self) -> Option<Self::Item> {
-        self.0.map(|ref_node| {
-            // self.0 = ref_node.next.as_ref().map::<&Node<T>, _>(|n| &n);
-            self.0 = ref_node.next.as_deref();
-            &ref_node.elem
+        self.0.as_ref().map(|boxed_node| {
+            self.0 = &boxed_node.next;
+            &boxed_node.elem
         })
     }
 }
-impl<T> crate::HaveIter for List<T> {
+impl<T> HaveIter for List<T> {
     type GroundType = T;
     type Iter<'a, U: 'a> = MyIter<'a, T> where T: 'a;
-    // Original:
-    // fn iter<'a>(&'a self) -> MyIter<'a, T> {
-    // Struct lifetime ellision:
-    // fn iter(&self) -> MyIter<T> {
-    // _explicitly elided_ lifetime
-    fn iter(&self) -> MyIter<'_, T> {
-        // MyIter(self.head.as_ref().map(|n| &**n))
-        MyIter(self.head.as_deref())
+    fn iter<'a>(&'a self) -> MyIter<'a, T> {
+        MyIter(&self.head)
     }
 }
 
-impl<T> crate::Clear for List<T> {
+impl<T> Clear for List<T> {
     fn clear(&mut self) {
         while let Some(_) = self.pop_by_box() {}
     }
 }
 
-impl<T> super::super::LinkedList<T> for List<T> {
+impl<T> LinkedList<T> for List<T> {
     fn new() -> Self {
         Self { head: None }
     }
@@ -88,6 +81,6 @@ impl<T> super::super::LinkedList<T> for List<T> {
 impl<T> Drop for List<T> {
     // Iterative approach s.t. no stack overflow
     fn drop(&mut self) {
-        <Self as crate::Clear>::clear(self)
+        self.clear()
     }
 }

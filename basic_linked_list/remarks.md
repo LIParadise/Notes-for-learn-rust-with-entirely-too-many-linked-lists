@@ -97,3 +97,17 @@ what is a `yield` again?
 > Quite simply, a lifetime is the name of a region (~block/scope) of code somewhere in a program. That's it. When a reference is tagged with a lifetime, we're saying that it has to be valid for that entire region.
 
 > The entire lifetime system is in turn just a constraint-solving system that tries to minimize the region of every reference.
+
+> Normally Rust is very good at doing this kind of conversion implicitly, through a process called _deref coercion_, where basically it can insert `*`'s throughout your code to make it type-check. It can do this because we have the borrow checker to ensure we never mess up pointers!
+
+
+``` rust
+pub fn map<U, F>(self, f: F) -> Option<U>
+self.next = node.next.as_ref().map(|node| &**node);
+self.next = node.next.as_ref().map::<&Node<T>, _>(|node| &node);
+self.next = node.next.as_deref();
+```
+
+> `map` is a generic function, the turbofish, `::<>`, lets us tell the compiler what we think the types of those generics should be. In this case `::<&Node<T>, _>` says "it should return a `&Node<T>`, and I don't know/care about that other type".
+
+> This in turn lets the compiler know that &node should have deref coercion applied to it, so we don't need to manually apply all those `*`'s!
