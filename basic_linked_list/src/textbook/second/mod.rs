@@ -1,5 +1,3 @@
-use std::borrow::Borrow;
-
 use crate::LinkedList;
 
 pub struct List<T> {
@@ -40,7 +38,8 @@ impl<'a, T> std::iter::Iterator for MyIter<'a, T> {
     type Item = &'a T;
     fn next(&mut self) -> Option<Self::Item> {
         self.0.map(|ref_node| {
-            self.0 = ref_node.next.as_ref().map(|box_node| box_node.borrow());
+            // self.0 = ref_node.next.as_ref().map::<&Node<T>, _>(|n| &n);
+            self.0 = ref_node.next.as_deref();
             &ref_node.elem
         })
     }
@@ -48,8 +47,14 @@ impl<'a, T> std::iter::Iterator for MyIter<'a, T> {
 impl<T> crate::HaveIter for List<T> {
     type GroundType = T;
     type Iter<'a, U: 'a> = MyIter<'a, T> where T: 'a;
-    fn iter<'a>(&'a self) -> MyIter<'a, T> {
-        MyIter(self.head.as_ref().map(|n| n.borrow()))
+    // Original:
+    // fn iter<'a>(&'a self) -> MyIter<'a, T> {
+    // Struct lifetime ellision:
+    // fn iter(&self) -> MyIter<T> {
+    // _explicitly elided_ lifetime
+    fn iter(&self) -> MyIter<'_, T> {
+        // MyIter(self.head.as_ref().map(|n| &**n))
+        MyIter(self.head.as_deref())
     }
 }
 
