@@ -15,6 +15,15 @@ pub trait HaveIter {
     type GroundType;
     fn iter<'a>(&'a self) -> Self::Iter<'a, Self::GroundType>;
 }
+pub trait HaveIterMut {
+    type GroundType;
+    type IterMut<'a, U: 'a>: Iterator<Item = &'a mut Self::GroundType>
+    where
+        Self: 'a;
+    // explicit lifetime ellision
+    // here `'_` is just `'a` which in turn is just lifetime of self
+    fn iter_mut<'a>(&mut self) -> Self::IterMut<'_, Self::GroundType>;
+}
 pub trait Clear {
     fn clear(&mut self);
 }
@@ -25,7 +34,7 @@ mod tests {
     use crate::HaveIter;
     use foo::*;
     mod foo {
-        #[derive(Debug, PartialEq, Eq, Default)]
+        #[derive(Debug, PartialEq, Eq, Default, Clone)]
         pub struct Foo {
             pub u: usize,
         }
@@ -61,53 +70,98 @@ mod tests {
         iter_worker(mine);
     }
 
-    fn iter_worker<
+    fn iter_mut_worker<
         T: From<i32> + std::fmt::Debug + Eq,
-        L: LinkedList<T> + IntoIterator + HaveIter + Clear,
+        L: LinkedList<T> + HaveIterMut + Clear + HaveIterMut<GroundType = T>,
     >(
         mut list: L,
     ) where
-        <L as IntoIterator>::Item: std::fmt::Debug + Into<T>,
-        <L as HaveIter>::GroundType: std::fmt::Debug + Into<T> + PartialEq<T>,
+        <L as HaveIterMut>::GroundType: std::fmt::Debug + Into<T> + PartialEq<T>,
     {
+        let mut senpai = vec![
+            T::from(1i32),
+            1.into(),
+            4.into(),
+            5.into(),
+            1.into(),
+            4.into(),
+        ];
         list.clear();
+        senpai.into_iter().for_each(|t| list.push(t));
+        let mut iter_mut = list.iter_mut();
+        iter_mut.next();
+        iter_mut.next();
+        iter_mut.next().map(|optn| {
+            *optn = T::from(114514);
+        });
+        drop(iter_mut);
         vec![
-            T::from(1i32),
+            T::from(1),
             1.into(),
             4.into(),
-            5.into(),
-            1.into(),
-            4.into(),
-        ]
-        .iter()
-        .rev()
-        .zip(list.iter())
-        .for_each(|(a, b)| assert_eq!(b, a));
-
-        list.push(T::from(1i32));
-        list.push(1.into());
-        list.push(4.into());
-        list.push(5.into());
-        list.push(1.into());
-        list.push(4.into());
-        vec![
-            T::from(1i32),
-            1.into(),
-            4.into(),
-            5.into(),
-            1.into(),
-            4.into(),
-            1.into(),
-            1.into(),
-            4.into(),
-            5.into(),
+            114514.into(),
             1.into(),
             4.into(),
         ]
         .into_iter()
         .rev()
-        .zip(list.into_iter())
-        .for_each(|(a, b)| assert_eq!(a, b.into()));
+        .for_each(|t| {
+            assert_eq!(t, list.pop().unwrap());
+        });
+    }
+
+    fn iter_worker<
+        T: From<i32> + std::fmt::Debug + Eq + Clone,
+        L: LinkedList<T> + IntoIterator + HaveIter + Clear,
+    >(
+        mut list: L,
+    ) where
+        <L as IntoIterator>::Item: std::fmt::Debug + Into<T> + Clone,
+        <L as HaveIter>::GroundType: std::fmt::Debug + Into<T> + PartialEq<T> + Clone,
+    {
+        list.clear();
+        let senpai = vec![
+            T::from(1i32),
+            1.into(),
+            4.into(),
+            5.into(),
+            1.into(),
+            4.into(),
+        ];
+        senpai.iter().for_each(|i| {
+            list.push(i.clone());
+        });
+        assert_eq!(
+            senpai
+                .iter()
+                .rev()
+                .zip(list.iter())
+                .inspect(|(a, b)| assert_eq!((*b).clone(), (*a).clone()))
+                .count(),
+            6
+        );
+
+        senpai.iter().for_each(|i| {
+            list.push(i.clone());
+        });
+        let senpai = {
+            let mut tmp = Vec::with_capacity(senpai.len() * 2);
+            tmp.extend(senpai.iter().cloned());
+            tmp.extend(senpai.into_iter());
+            tmp
+        };
+        assert_eq!(
+            senpai
+                .into_iter()
+                .rev()
+                .zip(list.into_iter())
+                .inspect(|(a, b)| assert_eq!(
+                    *a,
+                    <<L as IntoIterator>::Item as Into<T>>::into(b.clone())
+                ))
+                .count(),
+            12
+        );
     }
 
     fn basic_test_worker<L: LinkedList<Foo> + ?Sized>(list: &mut L) {
