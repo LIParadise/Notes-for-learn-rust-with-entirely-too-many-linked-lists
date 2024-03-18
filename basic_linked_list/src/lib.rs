@@ -68,17 +68,19 @@ mod tests {
         let mine: mine::second::List<Foo> = mine::second::List::new();
         iter_worker(textbook);
         iter_worker(mine);
+        let textbook: textbook::second::List<Foo> = textbook::second::List::new();
+        iter_mut_worker(textbook);
     }
 
     fn iter_mut_worker<
-        T: From<i32> + std::fmt::Debug + Eq,
+        T: From<i32> + std::fmt::Debug + Eq + Clone,
         L: LinkedList<T> + HaveIterMut + Clear + HaveIterMut<GroundType = T>,
     >(
         mut list: L,
     ) where
         <L as HaveIterMut>::GroundType: std::fmt::Debug + Into<T> + PartialEq<T>,
     {
-        let mut senpai = vec![
+        let senpai = vec![
             T::from(1i32),
             1.into(),
             4.into(),
@@ -95,19 +97,23 @@ mod tests {
             *optn = T::from(114514);
         });
         drop(iter_mut);
-        vec![
-            T::from(1),
-            1.into(),
-            4.into(),
-            114514.into(),
-            1.into(),
-            4.into(),
-        ]
-        .into_iter()
-        .rev()
-        .for_each(|t| {
-            assert_eq!(t, list.pop().unwrap());
-        });
+        assert_eq!(
+            vec![
+                T::from(1),
+                1.into(),
+                4.into(),
+                114514.into(),
+                1.into(),
+                4.into(),
+            ]
+            .into_iter()
+            .rev()
+            .inspect(|t| {
+                assert_eq!(t.clone(), list.pop().unwrap());
+            })
+            .count(),
+            6
+        );
     }
 
     fn iter_worker<

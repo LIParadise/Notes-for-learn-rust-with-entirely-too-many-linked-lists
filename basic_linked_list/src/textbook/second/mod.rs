@@ -71,7 +71,7 @@ impl<'a, T> Iterator for IterMut<'a, T> {
 impl<T> crate::HaveIterMut for List<T> {
     type GroundType = T;
     type IterMut<'a, U: 'a> = IterMut<'a, Self::GroundType> where T: 'a;
-    fn iter_mut<'a>(&mut self) -> Self::IterMut<'_, Self::GroundType> {
+    fn iter_mut(&mut self) -> Self::IterMut<'_, Self::GroundType> {
         IterMut(self.head.as_deref_mut())
     }
 }
