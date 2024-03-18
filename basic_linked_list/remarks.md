@@ -111,3 +111,12 @@ self.next = node.next.as_deref();
 > `map` is a generic function, the turbofish, `::<>`, lets us tell the compiler what we think the types of those generics should be. In this case `::<&Node<T>, _>` says "it should return a `&Node<T>`, and I don't know/care about that other type".
 
 > This in turn lets the compiler know that &node should have deref coercion applied to it, so we don't need to manually apply all those `*`'s!
+
+## second-iter-mut.html
+
+> That's kind of a big deal, if you ask me. There are a couple reasons why this works:
+
+- We take the `Option<&mut>` so we have exclusive access to the mutable reference. No need to worry about someone looking at it again.
+- Rust understands that it's ok to shard a mutable reference into the subfields of the pointed-to struct, because there's no way to "go back up", and they're definitely disjoint.
+
+It turns out that you can apply this basic logic to get a safe `IterMut` for an array or a tree as well! You can even make the iterator `DoubleEnded`, so that you can consume the iterator from the front and the back at once! Woah!
