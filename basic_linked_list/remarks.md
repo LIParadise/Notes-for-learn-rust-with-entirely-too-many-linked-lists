@@ -114,6 +114,30 @@ self.next = node.next.as_deref();
 
 ## second-iter-mut.html
 
+> Which can be desugared to:
+
+``` rust
+impl<'a, T> Iterator for Iter<'a, T> {
+    type Item = &'a T;
+
+    fn next<'b>(&'b mut self) -> Option<&'a T> { /* stuff */ }
+}
+```
+
+> The signature of `next` establishes _no_ constraint between the lifetime of the input and the output! Why do we care? It means we can call `next` over and over unconditionally!
+
+``` rust
+let mut list = List::new();
+list.push(1); list.push(2); list.push(3);
+
+let mut iter = list.iter();
+let x = iter.next().unwrap();
+let y = iter.next().unwrap();
+let z = iter.next().unwrap();
+```
+
+Here I'm assuming the author says look there's binding `x`, `y`, and `z`, which are borrows, but we're calling iterator `.next(&mut self)` with no trouble. Yeah it's kinda cool. This is since their lifetime spec differ.
+
 > That's kind of a big deal, if you ask me. There are a couple reasons why this works:
 
 - We take the `Option<&mut>` so we have exclusive access to the mutable reference. No need to worry about someone looking at it again.
